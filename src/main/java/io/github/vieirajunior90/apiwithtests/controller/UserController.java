@@ -55,4 +55,10 @@ public class UserController {
         User user = userService.update(userDto);
         return ResponseEntity.ok().body(mapper.map(user, UserDto.class));
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<UserDto> delete(@PathVariable Integer id) {
+        userService.deleteById(id);
+        return ResponseEntity.status(204).build();
+    }
 }
