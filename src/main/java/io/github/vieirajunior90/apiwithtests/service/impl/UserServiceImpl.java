@@ -6,6 +6,8 @@ import io.github.vieirajunior90.apiwithtests.service.UserService;
 import io.github.vieirajunior90.apiwithtests.service.exception.ObjectNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class UserServiceImpl implements UserService {
 
@@ -19,5 +21,10 @@ public class UserServiceImpl implements UserService {
     public User findById(Integer id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new ObjectNotFoundException("User not found"));
+    }
+
+    @Override
+    public List<User> findAll() {
+        return userRepository.findAll();
     }
 }
