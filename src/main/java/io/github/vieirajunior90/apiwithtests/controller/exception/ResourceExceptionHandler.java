@@ -1,5 +1,6 @@
 package io.github.vieirajunior90.apiwithtests.controller.exception;
 
+import io.github.vieirajunior90.apiwithtests.service.exception.DataIntegrityViolationException;
 import io.github.vieirajunior90.apiwithtests.service.exception.ObjectNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,5 +26,18 @@ public class ResourceExceptionHandler {
                 request.getRequestURI());
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<StandardError> dataIntegrityViolation(
+            DataIntegrityViolationException e, HttpServletRequest request) {
+
+        var error = new StandardError(
+                dtf.format(LocalDateTime.now()),
+                HttpStatus.BAD_REQUEST.value(),
+                e.getMessage(),
+                request.getRequestURI());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 }
