@@ -4,11 +4,13 @@ import io.github.vieirajunior90.apiwithtests.domain.User;
 import io.github.vieirajunior90.apiwithtests.domain.dto.UserDto;
 import io.github.vieirajunior90.apiwithtests.repository.UserRepository;
 import io.github.vieirajunior90.apiwithtests.service.UserService;
+import io.github.vieirajunior90.apiwithtests.service.exception.DataIntegrityViolationException;
 import io.github.vieirajunior90.apiwithtests.service.exception.ObjectNotFoundException;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -34,6 +36,15 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User create(UserDto dto) {
+        findByEmail(dto);
         return userRepository.save(mapper.map(dto, User.class));
+    }
+
+    private void findByEmail(UserDto dto) {
+        Optional<User> user = userRepository.findByEmail(dto.getEmail());
+
+        if (user.isPresent()) {
+            throw new DataIntegrityViolationException("Email already exists");
+        }
     }
 }
