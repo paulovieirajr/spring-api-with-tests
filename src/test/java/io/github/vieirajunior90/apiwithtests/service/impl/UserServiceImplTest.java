@@ -12,6 +12,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.modelmapper.ModelMapper;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -25,6 +26,7 @@ class UserServiceImplTest {
     public static final String EMAIL = "john@email.com";
     public static final String PASSWORD = "123";
     public static final String USER_NOT_FOUND = "User not found";
+    public static final int INDEX_ZERO = 0;
 
     @InjectMocks
     private UserServiceImpl service;
@@ -72,7 +74,18 @@ class UserServiceImplTest {
     }
 
     @Test
-    void findAll() {
+    void whenFindAllThenReturnAListOfUsers() {
+        when(repository.findAll()).thenReturn(List.of(user));
+
+        var response = service.findAll();
+
+        assertNotNull(response);
+        assertEquals(1, response.size());
+        assertEquals(User.class, response.get(INDEX_ZERO).getClass());
+        assertEquals(user, response.get(INDEX_ZERO));
+        assertEquals(ID, response.get(INDEX_ZERO).getId());
+        assertEquals(NAME, response.get(INDEX_ZERO).getName());
+        assertEquals(EMAIL, response.get(INDEX_ZERO).getEmail());
     }
 
     @Test
