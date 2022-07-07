@@ -3,6 +3,7 @@ package io.github.vieirajunior90.apiwithtests.service.impl;
 import io.github.vieirajunior90.apiwithtests.domain.User;
 import io.github.vieirajunior90.apiwithtests.domain.dto.UserDto;
 import io.github.vieirajunior90.apiwithtests.repository.UserRepository;
+import io.github.vieirajunior90.apiwithtests.service.exception.DataIntegrityViolationException;
 import io.github.vieirajunior90.apiwithtests.service.exception.ObjectNotFoundException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,6 +18,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
@@ -102,6 +104,19 @@ class UserServiceImplTest {
         assertEquals(NAME, response.getName());
         assertEquals(EMAIL, response.getEmail());
         assertEquals(PASSWORD, response.getPassword());
+    }
+
+    @Test
+    void whenCreateThenReturnDataIntegrityViolationException() {
+        when(repository.findByEmail(anyString())).thenReturn(optionalUser);
+
+        try {
+            optionalUser.get().setId(2);
+            service.create(userDto);
+        } catch (Exception ex) {
+            assertEquals(DataIntegrityViolationException.class, ex.getClass());
+            assertEquals("Email already exists", ex.getMessage());
+        }
     }
 
     @Test
