@@ -31,6 +31,7 @@ class UserServiceImplTest {
     public static final String PASSWORD = "123";
     public static final String USER_NOT_FOUND = "User not found";
     public static final int INDEX_ZERO = 0;
+    public static final String EMAIL_ALREADY_EXISTS = "Email already exists";
 
     @InjectMocks
     private UserServiceImpl service;
@@ -117,7 +118,7 @@ class UserServiceImplTest {
             service.create(userDto);
         } catch (Exception ex) {
             assertEquals(DataIntegrityViolationException.class, ex.getClass());
-            assertEquals("Email already exists", ex.getMessage());
+            assertEquals(EMAIL_ALREADY_EXISTS, ex.getMessage());
         }
     }
 
@@ -133,6 +134,20 @@ class UserServiceImplTest {
         assertEquals(NAME, response.getName());
         assertEquals(EMAIL, response.getEmail());
         assertEquals(PASSWORD, response.getPassword());
+    }
+
+    @Test
+    @SuppressWarnings("OptionalGetWithoutIsPresent")
+    void whenUpdateThenReturnDataIntegrityViolationException() {
+        when(repository.findByEmail(anyString())).thenReturn(optionalUser);
+
+        try {
+            optionalUser.get().setId(2);
+            service.update(userDto);
+        } catch (Exception ex) {
+            assertEquals(DataIntegrityViolationException.class, ex.getClass());
+            assertEquals(EMAIL_ALREADY_EXISTS, ex.getMessage());
+        }
     }
 
     @Test
