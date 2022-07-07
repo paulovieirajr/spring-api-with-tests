@@ -43,6 +43,7 @@ class UserServiceImplTest {
 
     private User user;
     private UserDto userDto;
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     private Optional<User> optionalUser;
 
     @BeforeEach
@@ -107,6 +108,7 @@ class UserServiceImplTest {
     }
 
     @Test
+    @SuppressWarnings("OptionalGetWithoutIsPresent")
     void whenCreateThenReturnDataIntegrityViolationException() {
         when(repository.findByEmail(anyString())).thenReturn(optionalUser);
 
@@ -120,7 +122,17 @@ class UserServiceImplTest {
     }
 
     @Test
-    void update() {
+    void whenUpdateThenReturnSuccess() {
+        when(repository.save(any())).thenReturn(user);
+
+        var response = service.update(userDto);
+
+        assertNotNull(response);
+        assertEquals(User.class, response.getClass());
+        assertEquals(ID, response.getId());
+        assertEquals(NAME, response.getName());
+        assertEquals(EMAIL, response.getEmail());
+        assertEquals(PASSWORD, response.getPassword());
     }
 
     @Test
