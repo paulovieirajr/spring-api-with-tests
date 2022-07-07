@@ -3,6 +3,7 @@ package io.github.vieirajunior90.apiwithtests.service.impl;
 import io.github.vieirajunior90.apiwithtests.domain.User;
 import io.github.vieirajunior90.apiwithtests.domain.dto.UserDto;
 import io.github.vieirajunior90.apiwithtests.repository.UserRepository;
+import io.github.vieirajunior90.apiwithtests.service.exception.DataIntegrityViolationException;
 import io.github.vieirajunior90.apiwithtests.service.exception.ObjectNotFoundException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,8 +17,10 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.anyInt;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 class UserServiceImplTest {
 
@@ -27,6 +30,7 @@ class UserServiceImplTest {
     public static final String PASSWORD = "123";
     public static final String USER_NOT_FOUND = "User not found";
     public static final int INDEX_ZERO = 0;
+    public static final String EMAIL_ALREADY_EXISTS = "Email already exists";
 
     @InjectMocks
     private UserServiceImpl service;
@@ -39,11 +43,12 @@ class UserServiceImplTest {
 
     private User user;
     private UserDto userDto;
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     private Optional<User> optionalUser;
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
+        openMocks(this);
         startUser();
     }
 
@@ -89,15 +94,80 @@ class UserServiceImplTest {
     }
 
     @Test
-    void create() {
+    void whenCreateThenReturnSuccess() {
+        when(repository.save(any())).thenReturn(user);
+
+        var response = service.create(userDto);
+
+        assertNotNull(response);
+        assertEquals(User.class, response.getClass());
+        assertEquals(ID, response.getId());
+        assertEquals(NAME, response.getName());
+        assertEquals(EMAIL, response.getEmail());
+        assertEquals(PASSWORD, response.getPassword());
     }
 
     @Test
-    void update() {
+    @SuppressWarnings("OptionalGetWithoutIsPresent")
+    void whenCreateThenReturnDataIntegrityViolationException() {
+        when(repository.findByEmail(anyString())).thenReturn(optionalUser);
+
+        try {
+            optionalUser.get().setId(2);
+            service.create(userDto);
+        } catch (Exception ex) {
+            assertEquals(DataIntegrityViolationException.class, ex.getClass());
+            assertEquals(EMAIL_ALREADY_EXISTS, ex.getMessage());
+        }
     }
 
     @Test
-    void deleteById() {
+    void whenUpdateThenReturnSuccess() {
+        when(repository.save(any())).thenReturn(user);
+
+        var response = service.update(userDto);
+
+        assertNotNull(response);
+        assertEquals(User.class, response.getClass());
+        assertEquals(ID, response.getId());
+        assertEquals(NAME, response.getName());
+        assertEquals(EMAIL, response.getEmail());
+        assertEquals(PASSWORD, response.getPassword());
+    }
+
+    @Test
+    @SuppressWarnings("OptionalGetWithoutIsPresent")
+    void whenUpdateThenReturnDataIntegrityViolationException() {
+        when(repository.findByEmail(anyString())).thenReturn(optionalUser);
+
+        try {
+            optionalUser.get().setId(2);
+            service.update(userDto);
+        } catch (Exception ex) {
+            assertEquals(DataIntegrityViolationException.class, ex.getClass());
+            assertEquals(EMAIL_ALREADY_EXISTS, ex.getMessage());
+        }
+    }
+
+    @Test
+    void deleteWithSuccess() {
+        when(repository.findById(anyInt())).thenReturn(optionalUser);
+        doNothing().when(repository).deleteById(anyInt());
+
+        service.deleteById(ID);
+        verify(repository, times(1)).deleteById(anyInt());
+    }
+
+    @Test
+    void deleteWithObjectNotFoundException() {
+        when(repository.findById(anyInt())).thenThrow(new ObjectNotFoundException(USER_NOT_FOUND));
+
+        try {
+            service.deleteById(ID);
+        } catch (Exception ex) {
+            assertEquals(ObjectNotFoundException.class, ex.getClass());
+            assertEquals(USER_NOT_FOUND, ex.getMessage());
+        }
     }
 
     private void startUser() {
