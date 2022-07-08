@@ -8,12 +8,14 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.modelmapper.ModelMapper;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -91,7 +93,17 @@ class UserControllerTest {
     }
 
     @Test
-    void create() {
+    void whenCreateThenReturnCreated() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
+
+        when(service.create(any())).thenReturn(user);
+
+        ResponseEntity<UserDto> response = controller.create(userDto);
+
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertEquals(Objects.requireNonNull(response.getHeaders().getLocation()).getPath(), "/1");
+        assertEquals(ResponseEntity.class, response.getClass());
     }
 
     @Test
