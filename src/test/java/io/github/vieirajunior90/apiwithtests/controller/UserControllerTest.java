@@ -2,25 +2,35 @@ package io.github.vieirajunior90.apiwithtests.controller;
 
 import io.github.vieirajunior90.apiwithtests.domain.User;
 import io.github.vieirajunior90.apiwithtests.domain.dto.UserDto;
+import io.github.vieirajunior90.apiwithtests.repository.UserRepository;
 import io.github.vieirajunior90.apiwithtests.service.impl.UserServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.modelmapper.ModelMapper;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
-@SpringBootTest
+
 class UserControllerTest {
 
     public static final int ID = 1;
     public static final String NAME = "John";
     public static final String EMAIL = "john@email.com";
     public static final String PASSWORD = "123";
+
     public static final String USER_NOT_FOUND = "User not found";
     public static final int INDEX_ZERO = 0;
     public static final String EMAIL_ALREADY_EXISTS = "Email already exists";
@@ -29,19 +39,16 @@ class UserControllerTest {
     private UserDto userDto;
 
     @InjectMocks
-    final UserController controller;
+    private UserController controller;
 
     @Mock
-    final UserServiceImpl service;
+    private UserServiceImpl service;
 
     @Mock
-    final ModelMapper mapper;
+    private UserRepository repository;
 
-    UserControllerTest(UserController controller, UserServiceImpl service, ModelMapper mapper) {
-        this.controller = controller;
-        this.service = service;
-        this.mapper = mapper;
-    }
+    @Mock
+    private ModelMapper mapper;
 
 
     @BeforeEach
@@ -51,7 +58,21 @@ class UserControllerTest {
     }
 
     @Test
-    void findById() {
+    void whenFindByIdThenReturnSuccess() {
+        when(service.findById(anyInt())).thenReturn(user);
+        when(mapper.map(any(), any())).thenReturn(userDto);
+
+        ResponseEntity<UserDto> response = controller.findById(ID);
+
+        assertNotNull(response);
+        assertNotNull(response.getBody());
+        assertEquals(ResponseEntity.class, response.getClass());
+        assertEquals(UserDto.class, response.getBody().getClass());
+
+        assertEquals(ID, response.getBody().getId());
+        assertEquals(NAME, response.getBody().getName());
+        assertEquals(EMAIL, response.getBody().getEmail());
+        assertEquals(PASSWORD, response.getBody().getPassword());
     }
 
     @Test
