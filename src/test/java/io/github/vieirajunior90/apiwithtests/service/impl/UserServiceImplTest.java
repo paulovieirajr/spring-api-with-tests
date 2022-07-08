@@ -5,18 +5,17 @@ import io.github.vieirajunior90.apiwithtests.domain.dto.UserDto;
 import io.github.vieirajunior90.apiwithtests.repository.UserRepository;
 import io.github.vieirajunior90.apiwithtests.service.exception.DataIntegrityViolationException;
 import io.github.vieirajunior90.apiwithtests.service.exception.ObjectNotFoundException;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.modelmapper.ModelMapper;
 
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
