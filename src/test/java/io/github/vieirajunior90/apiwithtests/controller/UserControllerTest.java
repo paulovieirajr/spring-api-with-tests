@@ -2,25 +2,26 @@ package io.github.vieirajunior90.apiwithtests.controller;
 
 import io.github.vieirajunior90.apiwithtests.domain.User;
 import io.github.vieirajunior90.apiwithtests.domain.dto.UserDto;
-import io.github.vieirajunior90.apiwithtests.repository.UserRepository;
 import io.github.vieirajunior90.apiwithtests.service.impl.UserServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.modelmapper.ModelMapper;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
-import java.util.Optional;
+import java.util.List;
+import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.openMocks;
 
 
@@ -43,9 +44,6 @@ class UserControllerTest {
 
     @Mock
     private UserServiceImpl service;
-
-    @Mock
-    private UserRepository repository;
 
     @Mock
     private ModelMapper mapper;
@@ -76,19 +74,66 @@ class UserControllerTest {
     }
 
     @Test
-    void findAll() {
+    void whenFindAllReturnAListOfUserDto() {
+        when(service.findAll()).thenReturn(List.of(user));
+        when(mapper.map(any(), any())).thenReturn(userDto);
+
+        ResponseEntity<List<UserDto>> response = controller.findAll();
+
+        assertNotNull(response);
+        assertNotNull(response.getBody());
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(ResponseEntity.class, response.getClass());
+        assertEquals(UserDto.class, response.getBody().get(INDEX_ZERO).getClass());
+
+        assertEquals(ID, response.getBody().get(INDEX_ZERO).getId());
+        assertEquals(NAME, response.getBody().get(INDEX_ZERO).getName());
+        assertEquals(EMAIL, response.getBody().get(INDEX_ZERO).getEmail());
+        assertEquals(PASSWORD, response.getBody().get(INDEX_ZERO).getPassword());
     }
 
     @Test
-    void create() {
+    void whenCreateThenReturnCreated() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
+
+        when(service.create(any())).thenReturn(user);
+
+        ResponseEntity<UserDto> response = controller.create(userDto);
+
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertEquals(Objects.requireNonNull(response.getHeaders().getLocation()).getPath(), "/1");
+        assertEquals(ResponseEntity.class, response.getClass());
     }
 
     @Test
-    void update() {
+    void whenUpdateThenReturnSuccess() {
+        when(service.update(userDto)).thenReturn(user);
+        when(mapper.map(any(), any())).thenReturn(userDto);
+
+        ResponseEntity<UserDto> response = controller.update(ID, userDto);
+
+        assertNotNull(response);
+        assertNotNull(response.getBody());
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(ResponseEntity.class, response.getClass());
+        assertEquals(UserDto.class, response.getBody().getClass());
+
+        assertEquals(ID, response.getBody().getId());
+        assertEquals(NAME, response.getBody().getName());
+        assertEquals(EMAIL, response.getBody().getEmail());
     }
 
     @Test
-    void delete() {
+    void whenDeleteThenReturnSuccess() {
+        doNothing().when(service).deleteById(anyInt());
+
+        ResponseEntity<UserDto> response = controller.delete(anyInt());
+
+        assertNotNull(response);
+        assertEquals(ResponseEntity.class, response.getClass());
+        verify(service, times(1)).deleteById(anyInt());
+        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
     }
 
     private void startUser() {
